@@ -1,0 +1,75 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:SpinTop.Core.ViewModels"
+        xmlns:views="clr-namespace:SpinTop.Core.Views"
+        x:Class="SpinTop.Core.Views.ChatWindow"
+        x:DataType="viewModels:ChatWindowViewModel"
+        SizeToContent="WidthAndHeight">
+    <Grid>
+        <Image Source="{Binding ImageSource}"
+               Stretch="Uniform"
+               MaxWidth="240"
+               MaxHeight="135"
+               HorizontalAlignment="Right"
+               VerticalAlignment="Top"
+               Margin="4"/>
+        <Rectangle Fill="Black" Stretch="Fill" Opacity="{Binding ChatBoxOpacity}" RadiusX="5" RadiusY="5"/>                
+        <Border BorderBrush="{Binding ChatBoxBorderColor}"
+                BorderThickness="1"
+                CornerRadius="5"
+                Padding="5">
+            <StackPanel>
+                <views:CustomMarkdownScrollViewer Name="ChatView"
+                                                  SelectionEnabled="True"
+                                                  Width="{Binding ChatBoxWidth}" Height="{Binding ChatBoxHeight}"
+                                                  HorizontalAlignment="Stretch"
+                                                  Markdown="{Binding MdText}"
+                                                  ScrollValue="{Binding MarkdownScrollValue, Mode=TwoWay}">
+                    <views:CustomMarkdownScrollViewer.Styles>
+                        <StyleInclude Source="../Styles/MarkdownStyles.axaml"></StyleInclude>
+                    </views:CustomMarkdownScrollViewer.Styles>
+                </views:CustomMarkdownScrollViewer>
+                <TextBox Name="UserPrompt" Margin="0 10 0 0" 
+                         MaxHeight="100" MinHeight="30" Watermark="Ask me anything..."
+                         TextWrapping="Wrap"
+                         Text="{Binding UserMessage}"
+                         AcceptsReturn="True"
+                         HorizontalAlignment="Stretch"
+                         VerticalContentAlignment="Bottom" >
+                    <TextBox.InnerRightContent>
+                        <StackPanel>
+                            <Button Command="{Binding StopAIResponse}"
+                                    IsVisible="{Binding MessageRequested}"
+                                    Margin="4"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent">
+                                <PathIcon Data="M6,6 H18 V18 H6 Z"
+                                          Width="12"
+                                          Height="12" />
+                            </Button>
+                            <Button Command="{Binding SendMessage}"
+                                    IsVisible="{Binding !MessageRequested}"
+                                    Margin="4"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent">
+                                <PathIcon Data="M2,3 L22,12 L2,21 L2,13 L17,12 L2,11 Z"
+                                          Width="12"
+                                          Height="12" />
+                            </Button>
+                        </StackPanel>
+                    </TextBox.InnerRightContent>
+                    <TextBox.KeyBindings>
+                        <KeyBinding Command="{Binding SendMessage}"
+                                    Gesture="Enter"/>
+                    </TextBox.KeyBindings>
+                </TextBox>
+                <ThemeVariantScope RequestedThemeVariant="Dark">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <ToggleSwitch IsChecked="{Binding ChatWithScreenshot}" OnContent="With screenshot" OffContent="With screenshot"/>
+                        <ToggleSwitch IsChecked="{Binding ReadClipboardImage}" OnContent="Read image from clipboard" OffContent="Read image from clipboard"/>
+                    </StackPanel>
+                </ThemeVariantScope>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

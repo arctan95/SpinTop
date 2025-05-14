@@ -1,0 +1,7 @@
+<linker>
+    <assembly fullname="SpinTop.Core">
+        <type fullname="SpinTop.Core.ViewModels*" preserve="all"/>
+        <type fullname="SpinTop.Core.Services*" preserve="all"/>
+        <type fullname="SpinTop.Core.MacOS.Services*" preserve="all"/>
+    </assembly>
+</linker>
