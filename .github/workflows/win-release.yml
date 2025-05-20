@@ -24,7 +24,7 @@ jobs:
             9.0.x
 
       - name: Install dotnet workload and dependencies
-        working-directory: ./src/DeskToys.Desktop.MacOS
+        working-directory: ./src/DeskToys.Desktop.Windows
         run: |
           dotnet workload restore
           dotnet restore

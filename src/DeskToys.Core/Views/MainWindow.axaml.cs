@@ -1,9 +1,7 @@
 using System;
 using Avalonia.Controls;
 using DeskToys.Core.Models;
-using DeskToys.Core.Services;
 using DeskToys.Core.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DeskToys.Core.Views;
 
@@ -13,6 +11,25 @@ public partial class MainWindow : Window
     public MainWindow()
     { 
         InitializeComponent();
+        Activated += OnActivated;
+        Deactivated += OnDeActivated;
+    }
+
+    private void OnActivated(object? sender, EventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.Interactive = true;
+            ForceFocusUserPromptInput();
+        }
+    }
+    
+    private void OnDeActivated(object? sender, EventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.Interactive = false;
+        }
     }
 
     protected override void OnOpened(EventArgs e)
@@ -22,6 +39,11 @@ public partial class MainWindow : Window
         base.OnOpened(e);
     }
 
+    private void ForceFocusUserPromptInput()
+    {
+        UserPrompt.Focus();
+    }
+    
     private void DetectScreenSize()
     {
         var screen = Screens.Primary;
@@ -36,23 +58,22 @@ public partial class MainWindow : Window
                 viewModel.ScreenMaxHeight = screen.Bounds.Size.Height;
                 viewModel.WindowPositionX = screen.Bounds.Position.X;
                 viewModel.WindowPositionY = screen.Bounds.Position.Y;
+                viewModel.MouseX = (screen.Bounds.Size.Width - viewModel.ChatBoxWidth) / 2.0;
+                viewModel.MouseY = screen.Bounds.Size.Height / 8.0;
             }
         }
     }
 
     private void ConfigureWindowBehaviors()
     {
-        IWindowConfigurator? windowConfigurator = ServiceProviderBuilder.ServiceProvider?.GetService<IWindowConfigurator>();
-        if (windowConfigurator != null)
+        if (DataContext is MainWindowViewModel viewModel)
         {
-            windowConfigurator.ConfigureWindow(
-                this,
-                new WindowBehaviorOptions
-                {
-                    ContentProtection = true,
-                    ExtendToFullScreen = true,
-                    IgnoreMouseEvents = true
-                });
+            viewModel.ConfigureWindowBehaviors(this, new WindowBehaviorOptions
+            {
+                ContentProtection = viewModel.ContentProtection,
+                ExtendToFullScreen = viewModel.ExtendToFullScreen,
+                IgnoreMouseEvents = viewModel.IgnoreMouseEvents,
+            });
         }
     }
 
@@ -61,8 +82,9 @@ public partial class MainWindow : Window
         if (DataContext is MainWindowViewModel viewModel)
         {
             viewModel.MainWindowShown = false;
+            viewModel.Interactive = false;
         }
         base.OnClosing(e);
     }
-
+    
 }

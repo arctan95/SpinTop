@@ -8,22 +8,29 @@ public class WindowConfigurator: IWindowConfigurator
 
     public void SetIgnoresMouseEvents(IntPtr handle, bool ignoreMouseEvents)
     {
-        var nsWindow = Runtime.GetNSObject<NSWindow>(handle);
-        if (nsWindow != null)
+        NSApplication.SharedApplication.InvokeOnMainThread(() =>
         {
-            nsWindow.IgnoresMouseEvents = ignoreMouseEvents;
-        }
+            var nsWindow = Runtime.GetNSObject<NSWindow>(handle);
+            if (nsWindow != null)
+            {
+                nsWindow.IgnoresMouseEvents = ignoreMouseEvents;
+            }
+        });
     }
 
     public void ExtendToFullScreen(IntPtr handle, bool extendToFullScreen)
     {
         if (extendToFullScreen)
         {
-            var nsWindow = Runtime.GetNSObject<NSWindow>(handle);
-            if (nsWindow != null)
+            NSApplication.SharedApplication.InvokeOnMainThread(() =>
             {
-                nsWindow.Level = NSWindowLevel.PopUpMenu;
-            }
+                var nsWindow = Runtime.GetNSObject<NSWindow>(handle);
+                if (nsWindow != null)
+                {
+                    nsWindow.Level = NSWindowLevel.PopUpMenu;
+                    nsWindow.StyleMask = NSWindowStyle.Borderless;
+                }
+            });
         }
     }
 
@@ -31,11 +38,14 @@ public class WindowConfigurator: IWindowConfigurator
     {
         if (contentProtection)
         {
-            var nsWindow = Runtime.GetNSObject<NSWindow>(handle);
-            if (nsWindow != null)
+            NSApplication.SharedApplication.InvokeOnMainThread(() =>
             {
-                nsWindow.SharingType = NSWindowSharingType.None;
-            }
+                var nsWindow = Runtime.GetNSObject<NSWindow>(handle);
+                if (nsWindow != null)
+                {
+                    nsWindow.SharingType = NSWindowSharingType.None;
+                }
+            });
         }
     }
 }

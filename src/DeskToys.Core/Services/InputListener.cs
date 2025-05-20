@@ -13,21 +13,20 @@ public class InputListener
     private static MainWindowViewModel? _mainWindowViewModel;
     private static IGlobalHook? _globalHook;
     private static DateTime _lastAltTime = DateTime.MinValue;
+    private static DateTime _lastShiftTime = DateTime.MinValue;
+    private static DateTime _lastCtrlTime = DateTime.MinValue;
     private const int DoubleTapThresholdMs = 300;
-
     
     static InputListener()
     {
         _globalHook = new TaskPoolGlobalHook(1, GlobalHookType.All, null, true);
         _globalHook.KeyPressed += GlobalHotkeyManager.OnKeyPressed;
         _globalHook.KeyPressed += GlobalHotkeyRecorder.OnKeyPressed;
-        _globalHook.KeyPressed += ScrollOnArrow;
+        _globalHook.KeyPressed += CheckDefaultKeyBindings;
         _globalHook.MouseMoved += OnMouseMoved;
         _globalHook.MouseDragged += OnMouseMoved;
         _mainWindowViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<MainWindowViewModel>();
     }
-    
-    
     public static void SetupSystemHook()
     {
         try
@@ -40,14 +39,14 @@ public class InputListener
             Debug.WriteLine($"Error starting hook: {ex.Message}");
         }
     }
-    
-    
-    static void OnMouseMoved(object? sender, MouseHookEventArgs e)
+
+
+    private static void OnMouseMoved(object? sender, MouseHookEventArgs e)
     {
         _mainWindowViewModel?.OnMouseMoved(e.Data.X, e.Data.Y);
     }
 
-    static void ScrollOnArrow(object? sender, KeyboardHookEventArgs e)
+    private static void CheckDefaultKeyBindings(object? sender, KeyboardHookEventArgs e)
     {
         if (e.Data.KeyCode is KeyCode.VcLeftAlt or KeyCode.VcRightAlt)
         {
@@ -57,28 +56,66 @@ public class InputListener
             if (timeDelta.TotalMilliseconds < DoubleTapThresholdMs)
             {
                 _mainWindowViewModel?.ToggleFollowPointer();
-                _mainWindowViewModel?.ToggleMdScrollable();
             }
             _lastAltTime = now;
         }
         
-        if (_mainWindowViewModel is { MdScrollable: true })
+        if (e.RawEvent.Mask.HasFlag(ModifierMask.LeftCtrl) && e.RawEvent.Mask.HasFlag(ModifierMask.LeftAlt))
         {
-            if (e.RawEvent.Mask.HasFlag(ModifierMask.LeftCtrl) && e.RawEvent.Mask.HasFlag(ModifierMask.LeftAlt))
+            double delta = 25;
+            Vector offset = e.Data.KeyCode switch
             {
-                double delta = 25;
-                Vector offset = e.Data.KeyCode switch
-                {
-                    KeyCode.VcUp => new Vector(0, -delta),
-                    KeyCode.VcDown => new Vector(0, delta),
-                    KeyCode.VcLeft => new Vector(-delta, 0),
-                    KeyCode.VcRight => new Vector(delta, 0),
-                    _ => Vector.Zero
-                };
+                KeyCode.VcUp => new Vector(0, -delta),
+                KeyCode.VcDown => new Vector(0, delta),
+                KeyCode.VcLeft => new Vector(-delta, 0),
+                KeyCode.VcRight => new Vector(delta, 0),
+                _ => Vector.Zero
+            };
 
-                ScrollMarkdown(offset);
+            ScrollMarkdown(offset);
+        }
+        
+        if (e.Data.KeyCode is KeyCode.VcLeftShift or KeyCode.VcRightShift)
+        {
+            var now = DateTime.Now;
+            var timeDelta = now - _lastCtrlTime;
+
+            if (timeDelta.TotalMilliseconds < DoubleTapThresholdMs)
+            {
+                if (Application.Current is App app)
+                {
+                    app.ToggleClickThrough();
+                }
             }
-           
+            _lastCtrlTime = now;
+        }
+
+        if (e.Data.KeyCode is KeyCode.VcLeftControl or KeyCode.VcRightControl)
+        {
+            var now = DateTime.Now;
+            var timeDelta = now - _lastShiftTime;
+            
+            if (timeDelta.TotalMilliseconds < DoubleTapThresholdMs)
+            {
+                if (Application.Current is App app)
+                {
+                    if (_mainWindowViewModel != null)
+                    {
+                        if (_mainWindowViewModel is { MainWindowShown: true, Interactive: true })
+                        {
+                            return;
+                        }
+                        if (!_mainWindowViewModel.MainWindowShown)
+                        {
+                            app.ShowMainWindow(true);
+                        }
+                        app.ForceActivateMainWindow();
+                        
+                        _mainWindowViewModel.Interactive = true;
+                    }
+                }
+            }
+            _lastShiftTime = now;
         }
     }
     

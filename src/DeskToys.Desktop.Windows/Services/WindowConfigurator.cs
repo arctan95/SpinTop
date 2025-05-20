@@ -2,6 +2,7 @@ using System;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
+using Avalonia.Media;
 using DeskToys.Core.Services;
 using DeskToys.Core.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,13 +16,24 @@ public class WindowConfigurator: IWindowConfigurator
     private const int HWND_TOPMOST = -1;
     private readonly MainWindowViewModel? _mainWindowViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<MainWindowViewModel>();
     
+    
+    private static COLORREF ToColorRef(Color color)
+    {
+        return (COLORREF)(uint)(color.R | (color.G << 8) | (color.B << 16));
+    }
     public void SetIgnoresMouseEvents(IntPtr handle, bool ignoreMouseEvents)
     {
+        int style = PInvoke.GetWindowLong((HWND)handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
         if (ignoreMouseEvents)
         {
-            int style = PInvoke.GetWindowLong((HWND)handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
-            PInvoke.SetWindowLong((HWND)handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, style | WS_EX_LAYERED | WS_EX_TRANSPARENT);
-            PInvoke.SetLayeredWindowAttributes((HWND)handle, (COLORREF)0, 255, LAYERED_WINDOW_ATTRIBUTES_FLAGS.LWA_ALPHA);
+            style |= WS_EX_LAYERED | WS_EX_TRANSPARENT;
+            PInvoke.SetWindowLong((HWND)handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, style);
+            PInvoke.SetLayeredWindowAttributes((HWND)handle, ToColorRef(Brushes.Transparent.Color), 0, LAYERED_WINDOW_ATTRIBUTES_FLAGS.LWA_COLORKEY);
+        }
+        else
+        {
+            style &= ~WS_EX_TRANSPARENT;
+            PInvoke.SetWindowLong((HWND)handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, style);
         }
         
     }

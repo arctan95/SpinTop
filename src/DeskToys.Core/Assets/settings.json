@@ -12,10 +12,11 @@
 		"default_system_prompt": ""
 	},
 	"control": {
-		"open_main_window": [1, 120],
-		"take_screenshot": [1, 121],
+		"open_main_window": [1, 119],
+		"take_screenshot": [1, 120],
 		"ask_ai": [3, 10],
-		"start_over": [1, 122],
-		"quit_app": [1, 27]
+		"start_over": [1, 121],
+		"quit_app": [1, 27],
+		"click_through": [1, 122]
 	}
 }

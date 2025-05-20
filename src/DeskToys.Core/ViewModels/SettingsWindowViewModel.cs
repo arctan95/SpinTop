@@ -35,6 +35,8 @@ public partial class SettingsWindowViewModel: ViewModelBase
     [ObservableProperty]
     private string? _followPointerKey;
     [ObservableProperty]
+    private string? _clickThroughKey;
+    [ObservableProperty]
     private string? _quitAppKey;
     [ObservableProperty]
     private bool _settingsWindowShown;
@@ -54,7 +56,6 @@ public partial class SettingsWindowViewModel: ViewModelBase
     partial void OnUserPromptChanged(string? value) =>  _configService?.Set("ai.default_user_prompt", value);
 
     partial void OnApiKeyChanged(string? value) => _configService?.Set("ai.api_key", value);
-
     partial void OnEndpointChanged(string? value) => _configService?.Set("ai.endpoint", value);
 
     partial void OnModelChanged(string? value) => _configService?.Set("ai.model", value);
@@ -76,6 +77,7 @@ public partial class SettingsWindowViewModel: ViewModelBase
         var askAIHotKey = _configService?.Get<ushort[]>("control.ask_ai");
         var startOverHotkey = _configService?.Get<ushort[]>("control.start_over");
         var quitAppHotkey = _configService?.Get<ushort[]>("control.quit_app");
+        var clickThroughHotkey = _configService?.Get<ushort[]>("control.click_through");
         if (mainWindowHotkey is { Length: > 1 })
         {
             MainWindowKey = PlatformKeyGestureConverter.ToPlatformString(new KeyGesture(KeyConvertor.ToKey((KeyCode)mainWindowHotkey[1]), KeyConvertor.ToKeyModifiers((ModifierMask)mainWindowHotkey[0])));
@@ -91,6 +93,10 @@ public partial class SettingsWindowViewModel: ViewModelBase
         if (startOverHotkey is { Length: > 1 })
         {
             StartOverKey = PlatformKeyGestureConverter.ToPlatformString(new KeyGesture(KeyConvertor.ToKey((KeyCode)startOverHotkey[1]), KeyConvertor.ToKeyModifiers((ModifierMask)startOverHotkey[0])));
+        }
+        if (clickThroughHotkey is { Length: > 1 })
+        {
+            ClickThroughKey = PlatformKeyGestureConverter.ToPlatformString(new KeyGesture(KeyConvertor.ToKey((KeyCode)clickThroughHotkey[1]), KeyConvertor.ToKeyModifiers((ModifierMask)clickThroughHotkey[0])));
         }
         if (quitAppHotkey is { Length: > 1 })
         {

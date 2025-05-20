@@ -12,6 +12,7 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using DeskToys.Core.Views;
 using CommunityToolkit.Mvvm.Input;
+using DeskToys.Core.Models;
 using DeskToys.Core.Services;
 using DeskToys.Core.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -86,13 +87,30 @@ public partial class App : Application
         FunctionRegistry.RegisterFunction("open_main_window", ToggleShowMainWindow);
         FunctionRegistry.RegisterFunction("take_screenshot", TakeScreenshot);
         FunctionRegistry.RegisterFunction("start_over", StartOver);
-        FunctionRegistry.RegisterFunction("ask_question", AskQuestion);
+        FunctionRegistry.RegisterFunction("ask_ai", AskAI);
         FunctionRegistry.RegisterFunction("quit_app", QuitApplication);
+        FunctionRegistry.RegisterFunction("click_through", ToggleClickThrough);
+    }
+    
+    public void ToggleClickThrough()
+    {
+        if (_mainWindow != null && _mainWindowViewModel != null)
+        {
+            _mainWindowViewModel.IgnoreMouseEvents = !_mainWindowViewModel.IgnoreMouseEvents;;
+
+            _mainWindowViewModel.ConfigureWindowBehaviors(_mainWindow, new WindowBehaviorOptions
+            {
+                ContentProtection = _mainWindowViewModel.ContentProtection,
+                ExtendToFullScreen = _mainWindowViewModel.ExtendToFullScreen,
+                IgnoreMouseEvents = _mainWindowViewModel.IgnoreMouseEvents,
+            });
+        }
     }
 
-    private void AskQuestion()
+
+    private void AskAI()
     {
-        _mainWindowViewModel?.AskQuestion(_mainWindowViewModel.ImageSource);
+        _mainWindowViewModel?.AskAIWithDefaultPrompt(_mainWindowViewModel.ImageSource);
     }
 
     private void TakeScreenshot()
@@ -118,7 +136,8 @@ public partial class App : Application
 
     private async Task CheckUpdates()
     {
-        await _sparkle.CheckForUpdatesAtUserRequest();
+        if (_sparkle != null)
+            await _sparkle.CheckForUpdatesAtUserRequest();
     }
 
 
@@ -145,10 +164,16 @@ public partial class App : Application
     
     private async void StartSparkle()
     {
-        await _sparkle.StartLoop(_settingsWindowViewModel?.AutoCheckForUpdates ?? true);
+        if (_sparkle != null)
+        {
+            await _sparkle.StartLoop(_settingsWindowViewModel?.AutoCheckForUpdates ?? true);
+        }
     }
-    
-    protected void ShowMainWindow()
+    public void ShowMainWindow()
+    {
+        ShowMainWindow(false);
+    }
+    public void ShowMainWindow(bool forceActivated)
     {
         Dispatcher.UIThread.InvokeAsync(() =>
         {
@@ -156,21 +181,20 @@ public partial class App : Application
             {
                 _mainWindow = new MainWindow
                 {
-                    Focusable = false,
                     Topmost = true,
                     CanResize = false,
-                    IsHitTestVisible = false,
                     ShowInTaskbar = false,
-                    ShowActivated = false,
+                    ShowActivated = forceActivated,
                     Background = Brushes.Transparent,
                     TransparencyLevelHint = [WindowTransparencyLevel.Transparent],
                     SystemDecorations = SystemDecorations.None,
                     DataContext = _mainWindowViewModel
                 };
             }
-            _mainWindow.Show();
             if (_mainWindowViewModel != null)
                 _mainWindowViewModel.MainWindowShown = true;
+            
+            _mainWindow.Show();
         });
     }
     
@@ -218,10 +242,22 @@ public partial class App : Application
         {
             if (_mainWindowViewModel != null)
             {
-                _mainWindowViewModel.MdText = "Ask me anything";
+                _mainWindowViewModel.MdText = "DeskToys AI";
                 _mainWindowViewModel.ImageSource = null;
+                _mainWindowViewModel.UserMessage = string.Empty;
+                _mainWindowViewModel.StopAIResponse();
             }
         });
+    }
+    public void ForceActivateMainWindow()
+    {
+        if (_mainWindow != null)
+        {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _mainWindow.Activate();
+            });
+        }
     }
     
     public void QuitApplication()

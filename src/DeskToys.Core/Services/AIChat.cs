@@ -1,6 +1,8 @@
 using System;
 using System.ClientModel;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using DeskToys.Core.ViewModels;
@@ -15,6 +17,7 @@ public class AIChat
     private static MainWindowViewModel? _mainWindowViewModel;
     private static SettingsWindowViewModel? _settingsViewModel;
     private static ChatClient? chatClient;
+    private static readonly Dictionary<string, CancellationTokenSource> Cancellations = new();
 
     static AIChat()
     {
@@ -31,12 +34,32 @@ public class AIChat
         }
     }
 
-    private static async Task Ask(params ChatMessage[] messages)
+    public static void stopAIResponseStream(string requestId)
     {
-        AsyncCollectionResult<StreamingChatCompletionUpdate>? completionUpdates = chatClient?.CompleteChatStreamingAsync(messages);
+        if (!string.IsNullOrEmpty(requestId) && Cancellations.ContainsKey(requestId))
+        {
+            var  cancellationTokenSource = Cancellations[requestId];
+            if (cancellationTokenSource != null && !cancellationTokenSource.IsCancellationRequested && _mainWindowViewModel != null)
+            {
+                cancellationTokenSource.Cancel();
+                _mainWindowViewModel.MessageRequested = false;
+                Cancellations.Remove(requestId);
+            }
+        }
+    }
+
+    private static async Task Ask(string requestId, params ChatMessage[] messages)
+    {
+        var cts = new CancellationTokenSource();
+        var cancelToken = cts.Token;
+        cancelToken.ThrowIfCancellationRequested();
+        Cancellations.Add(requestId, cts);
+        AsyncCollectionResult<StreamingChatCompletionUpdate>? completionUpdates = chatClient?.CompleteChatStreamingAsync(messages, null, cancelToken);
 
         if (_mainWindowViewModel != null)
         {
+            _mainWindowViewModel.LastRequestId = requestId;
+            _mainWindowViewModel.MessageRequested = true;
             _mainWindowViewModel.MdText = "[AI]: ";
             if (completionUpdates != null)
             {
@@ -47,24 +70,46 @@ public class AIChat
                         string text = completionUpdate.ContentUpdate[0].Text;
                         _mainWindowViewModel.UpdateText(text);
                     }
+
+                    if (completionUpdate.FinishReason == ChatFinishReason.Stop)
+                    {
+                        _mainWindowViewModel.MessageRequested = false;
+                        Cancellations.Remove(requestId);
+                    }
                 }
             }
         }
     }
-
-    public static async Task Ask(Bitmap? bitmap, string? question = null)
+    
+    public static async Task Ask(Bitmap? bitmap = null, string? question = null)
     {
-        var text = ChatMessageContentPart.CreateTextPart(question ?? _settingsViewModel?.UserPrompt);
-        var sysText = ChatMessageContentPart.CreateTextPart(_settingsViewModel?.SystemPrompt);
-        ChatMessageContentPart? image = null;
+        var userPrompt = question ?? _settingsViewModel?.UserPrompt;
+        var systemPrompt = _settingsViewModel?.SystemPrompt;
+
+        if (string.IsNullOrWhiteSpace(userPrompt) && bitmap == null)
+        {
+            Console.WriteLine("Both question and image are null. Nothing to send.");
+            return;
+        }
+
+        var userParts = new List<ChatMessageContentPart>();
+
+        if (!string.IsNullOrWhiteSpace(userPrompt))
+        {
+            userParts.Add(ChatMessageContentPart.CreateTextPart(userPrompt));
+        }
+
         if (bitmap != null)
         {
-            image =  ChatMessageContentPart.CreateImagePart(ToBinaryData(bitmap), "image/png");
+            var imageData = ToBinaryData(bitmap);
+            userParts.Add(ChatMessageContentPart.CreateImagePart(imageData, "image/png"));
         }
-        
-        ChatMessage sysMessage = new SystemChatMessage(sysText);
-        ChatMessage message = new UserChatMessage(text, image);
-        await Ask(sysMessage, message);
+
+        var userMessage = new UserChatMessage(userParts.ToArray());
+        var sysPart = ChatMessageContentPart.CreateTextPart(systemPrompt);
+        var systemMessage = new SystemChatMessage(sysPart);
+        var requestId = Guid.NewGuid().ToString();
+        await Ask(requestId, systemMessage, userMessage);
     }
 
     private static BinaryData ToBinaryData(Bitmap bitmap)

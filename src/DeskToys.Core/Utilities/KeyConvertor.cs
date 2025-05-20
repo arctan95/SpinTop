@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Generic;
 using Avalonia.Input;
 using SharpHook.Native;
 
@@ -27,8 +27,6 @@ public class KeyConvertor
 
     public static Key ToKey(KeyCode keyCode)
     {
-        if (Enum.TryParse<Key>(keyCode.ToString().Substring(2), out var result))
-            return result;
-        return Key.None;
+        return KeyCodeMap.Map.GetValueOrDefault(keyCode, Key.None);
     }
 }

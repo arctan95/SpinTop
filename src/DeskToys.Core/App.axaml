@@ -9,20 +9,20 @@
     <Application.Styles>
         <FluentTheme DensityStyle="Compact"/>
     </Application.Styles>
- <TrayIcon.Icons>
-     <TrayIcons>
-         <TrayIcon Icon="/Assets/Icon.ico" ToolTipText="DeskToys">
-             <TrayIcon.Menu>
-                 <NativeMenu>
-                     <NativeMenuItem Header="_DeskToys" Command="{Binding MainCommand}" />
-                     <NativeMenuItemSeparator />
-                     <NativeMenuItem Header="_Settings..." Command="{Binding SettingsCommand}" />
-                     <NativeMenuItem Header="_Check for updates..." Command="{Binding CheckUpdatesCommand}" />
-                     <NativeMenuItemSeparator />
-                     <NativeMenuItem Header="Q_uit" Command="{Binding QuitCommand}" />
-                 </NativeMenu>
-             </TrayIcon.Menu>
-         </TrayIcon>
-     </TrayIcons>
- </TrayIcon.Icons>
+     <TrayIcon.Icons>
+         <TrayIcons>
+             <TrayIcon Icon="/Assets/Icon.ico" ToolTipText="DeskToys">
+                 <TrayIcon.Menu>
+                     <NativeMenu>
+                         <NativeMenuItem Header="_DeskToys" Command="{Binding MainCommand}" />
+                         <NativeMenuItemSeparator />
+                         <NativeMenuItem Header="_Settings..." Command="{Binding SettingsCommand}" />
+                         <NativeMenuItem Header="_Check for updates..." Command="{Binding CheckUpdatesCommand}" />
+                         <NativeMenuItemSeparator />
+                         <NativeMenuItem Header="Q_uit" Command="{Binding QuitCommand}" />
+                     </NativeMenu>
+                 </TrayIcon.Menu>
+             </TrayIcon>
+         </TrayIcons>
+     </TrayIcon.Icons>
 </Application>

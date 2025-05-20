@@ -62,9 +62,9 @@
                     BorderThickness="1"
                     Padding="10"
                     >
-                        <Grid ColumnDefinitions="Auto, *"  RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Margin="10 5">Open main window:</TextBlock> 
-                            <TextBox Grid.Row="0" Grid.Column="1" Margin="10 5" Name="OpenMainWindow" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus" IsReadOnly="True"  Width="300" Watermark= "Press shortcut"  Text="{Binding MainWindowKey, Mode=TwoWay} " >
+                        <Grid ColumnDefinitions="Auto, *"  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Margin="10 5">Toggle Open main window:</TextBlock> 
+                            <TextBox Grid.Row="0" Grid.Column="1" Margin="10 5" Name="OpenMainWindow" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus" IsReadOnly="True"  Width="260" Watermark= "Press shortcut"  Text="{Binding MainWindowKey, Mode=TwoWay} " >
                                 <TextBox.Styles>
                                     <Style Selector="TextBox">
                                         <Setter Property="CaretBrush" Value="Transparent"/>
@@ -73,7 +73,7 @@
                             </TextBox>
                             
                             <TextBlock Grid.Row="1" Grid.Column="0" Margin="10 5">Take screenshot:</TextBlock>
-                            <TextBox Grid.Row="1" Grid.Column="1"  Margin="10 5" Name="TakeScreenshot" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus" IsReadOnly="True" Width="300" Watermark="Press shortcut"  Text="{Binding ScreenshotKey, Mode=TwoWay}" >
+                            <TextBox Grid.Row="1" Grid.Column="1"  Margin="10 5" Name="TakeScreenshot" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus" IsReadOnly="True" Width="260" Watermark="Press shortcut"  Text="{Binding ScreenshotKey, Mode=TwoWay}" >
                                 <TextBox.Styles>
                                     <Style Selector="TextBox">
                                         <Setter Property="CaretBrush" Value="Transparent"/>
@@ -82,7 +82,7 @@
                             </TextBox>
                             
                             <TextBlock Grid.Row="2" Grid.Column="0" Margin="10 5">Start over:</TextBlock>
-                            <TextBox Grid.Row="2" Grid.Column="1"  Margin="10 5" Name="StartOver" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus" IsReadOnly="True"  Width="300" Watermark="Press shortcut"  Text="{Binding StartOverKey, Mode=TwoWay}" >
+                            <TextBox Grid.Row="2" Grid.Column="1"  Margin="10 5" Name="StartOver" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus" IsReadOnly="True"  Width="260" Watermark="Press shortcut"  Text="{Binding StartOverKey, Mode=TwoWay}" >
                                 <TextBox.Styles>
                                     <Style Selector="TextBox">
                                         <Setter Property="CaretBrush" Value="Transparent"/>
@@ -91,7 +91,7 @@
                             </TextBox>
                             
                             <TextBlock Grid.Row="3" Grid.Column="0"  Margin="10 5">Ask AI:</TextBlock>
-                            <TextBox Grid.Row="3" Grid.Column="1"  Margin="10 5" Name="AskQuestion" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus"  IsReadOnly="True" Width="300" Watermark="Press shortcut"  Text="{Binding AskAIKey, Mode=TwoWay}" >
+                            <TextBox Grid.Row="3" Grid.Column="1"  Margin="10 5" Name="AskQuestion" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus"  IsReadOnly="True" Width="260" Watermark="Press shortcut"  Text="{Binding AskAIKey, Mode=TwoWay}" >
                                 <TextBox.Styles>
                                     <Style Selector="TextBox">
                                         <Setter Property="CaretBrush" Value="Transparent"/>
@@ -99,8 +99,17 @@
                                 </TextBox.Styles>
                             </TextBox>
                             
-                            <TextBlock Grid.Row="4" Grid.Column="0"  Margin="10 5">Quit application:</TextBlock>
-                            <TextBox Grid.Row="4" Grid.Column="1"  Margin="10 5" Name="QuitApp" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus"  IsReadOnly="True"  Width="300" Watermark="Press shortcut"  Text="{Binding QuitAppKey, Mode=TwoWay}" >
+                            <TextBlock Grid.Row="4" Grid.Column="0"  Margin="10 5">Toggle mouse click-through:</TextBlock>
+                            <TextBox Grid.Row="4" Grid.Column="1"  Margin="10 5" Name="ClickThrough" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus"  IsReadOnly="True"  Width="260" Watermark="Press shortcut"  Text="{Binding ClickThroughKey, Mode=TwoWay}" >
+                                <TextBox.Styles>
+                                    <Style Selector="TextBox">
+                                        <Setter Property="CaretBrush" Value="Transparent"/>
+                                    </Style>
+                                </TextBox.Styles>
+                            </TextBox>
+                            
+                            <TextBlock Grid.Row="5" Grid.Column="0"  Margin="10 5">Quit application:</TextBlock>
+                            <TextBox Grid.Row="5" Grid.Column="1"  Margin="10 5" Name="QuitApp" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus"  IsReadOnly="True"  Width="260" Watermark="Press shortcut"  Text="{Binding QuitAppKey, Mode=TwoWay}" >
                                 <TextBox.Styles>
                                     <Style Selector="TextBox">
                                         <Setter Property="CaretBrush" Value="Transparent"/>

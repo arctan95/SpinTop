@@ -1,7 +1,10 @@
 using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
+using DeskToys.Core.Models;
 using DeskToys.Core.Services;
 
 namespace DeskToys.Core.ViewModels;
@@ -11,12 +14,13 @@ public partial class MainWindowViewModel: ViewModelBase
     [ObservableProperty]
     private Bitmap? _imageSource;
     [ObservableProperty]
-    private double _maxChatBoxWidth = 800;
-    [ObservableProperty]
-    private double _maxChatBoxHeight = 400;
-
-    [ObservableProperty]
     private string _chatBoxBorderColor = "Transparent";
+    [ObservableProperty]
+    private string _userMessage = "";
+    [ObservableProperty]
+    private string _lastRequestId = "";
+    [ObservableProperty]
+    private bool _messageRequested;
     [ObservableProperty]
     private int _screenMaxWidth;
     [ObservableProperty]
@@ -30,20 +34,29 @@ public partial class MainWindowViewModel: ViewModelBase
     [ObservableProperty]
     private int _windowPositionY;
     [ObservableProperty]
-    private bool _isChatBoxVisible;
-    [ObservableProperty]
     private bool _mainWindowShown;
     [ObservableProperty]
     private Vector _markdownScrollValue = Vector.Zero;
     [ObservableProperty]
-    private bool _mdScrollable;
+    private string _mdText = "DeskToys AI";
     [ObservableProperty]
-    private string _mdText = "Ask me anything";
+    private string _chatBoxOpacity = "0.4";
     [ObservableProperty]
-    private string _chatBoxOpacity = "0.6";
-    private bool _followPointer = true;
-
-    public void AskQuestion(Bitmap? bitmap)
+    private bool _contentProtection = true;
+    [ObservableProperty]
+    private bool _extendToFullScreen = true;
+    [ObservableProperty]
+    private bool _ignoreMouseEvents = true;
+    [ObservableProperty]
+    private bool _interactive;
+    [ObservableProperty]
+    private bool _followPointer;
+    [ObservableProperty]
+    private double _chatBoxWidth = 800;
+    [ObservableProperty]
+    private double _chatBoxHeight = 600;
+    
+    public void AskAIWithDefaultPrompt(Bitmap? bitmap)
     {
         if (bitmap == null)
         {
@@ -51,6 +64,27 @@ public partial class MainWindowViewModel: ViewModelBase
             return;
         }
         _ = AIChat.Ask(bitmap);
+    }
+    public void StopAIResponse()
+    {
+        if (!string.IsNullOrWhiteSpace(LastRequestId))
+        {
+            AIChat.stopAIResponseStream(LastRequestId);
+        }
+    }
+
+    public void SendMessage()
+    {
+        MdText += Environment.NewLine;
+        MdText += UserMessage;
+        _ = AIChat.Ask(ImageSource, UserMessage);
+        UserMessage = string.Empty;
+    }
+    
+    public void ConfigureWindowBehaviors(Window window, WindowBehaviorOptions options)
+    { 
+        var windowConfigurator = ServiceProviderBuilder.ServiceProvider?.GetService<IWindowConfigurator>();
+        windowConfigurator?.ConfigureWindow(window, options);
     }
     
     public void OnMouseMoved(int mouseX, int mouseY)
@@ -60,28 +94,18 @@ public partial class MainWindowViewModel: ViewModelBase
             return;
         }
 
-        if (!IsChatBoxVisible)
-        {
-            IsChatBoxVisible = true;
-        }
-
-        if (!_followPointer)
+        if (!FollowPointer)
         {
             return;
         }
         
-        int deltaX = 20;
+        int deltaX = -(int)(ChatBoxWidth / 2);
         int deltaY = 20;
         var localX = mouseX - WindowPositionX;
         var localY = mouseY - WindowPositionY;
         
-        if (localX + deltaX + MaxChatBoxWidth / 2 > ScreenMaxWidth)
-            deltaX = (int)(-MaxChatBoxWidth / 2 - deltaX);
-
-        if (localY + deltaY + MaxChatBoxHeight / 2 > ScreenMaxHeight)
-            deltaY = (int)(-MaxChatBoxHeight / 2 - deltaY);
-        MouseX = Math.Clamp(localX + deltaX, (int)0, (int)ScreenMaxWidth);
-        MouseY = Math.Clamp(localY + deltaY, (int)0, (int)ScreenMaxHeight);
+        MouseX = localX + deltaX;
+        MouseY = localY + deltaY;
     }
 
     public void UpdateText(string text)
@@ -91,12 +115,7 @@ public partial class MainWindowViewModel: ViewModelBase
 
     public void ToggleFollowPointer()
     {
-        _followPointer = !_followPointer;
-    }
-
-    public void ToggleMdScrollable()
-    {
-        MdScrollable = !MdScrollable;
+        FollowPointer = !FollowPointer;
     }
 
     public void ScrollMarkdown(Vector vector)
@@ -104,9 +123,9 @@ public partial class MainWindowViewModel: ViewModelBase
         MarkdownScrollValue += vector;
     }
 
-    partial void OnMdScrollableChanged(bool value)
+    partial void OnInteractiveChanged(bool value)
     {
         ChatBoxBorderColor = value ? "Blue" : "Transparent";
-        ChatBoxOpacity = value ? "0.5" : "0.6";
+        ChatBoxOpacity = value ? "0.5" : "0.4";
     }
 }

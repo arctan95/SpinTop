@@ -1,3 +1,4 @@
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Converters;
 using Avalonia.Input;
@@ -11,6 +12,17 @@ namespace DeskToys.Core.Views;
 
 public partial class SettingsWindow: Window
 {
+    
+    private Key[] KeyModifies =  [
+        Key.LeftShift,
+        Key.RightShift,
+        Key.LeftCtrl,
+        Key.RightCtrl,
+        Key.LeftAlt,
+        Key.RightAlt,
+        Key.LWin,
+        Key.RWin,
+    ];
     
     public SettingsWindow()
     {
@@ -42,6 +54,13 @@ public partial class SettingsWindow: Window
     
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
+        if (sender is TextBox textBox)
+        {
+            if (!KeyModifies.Contains(e.Key))
+            {
+                textBox.Text = PlatformKeyGestureConverter.ToPlatformString(new KeyGesture(e.Key, e.KeyModifiers));
+            }
+        }
         e.Handled = true;
     }
     
