@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using DeskToys.Core.Views;
@@ -113,10 +114,15 @@ public partial class App : Application
         _mainWindowViewModel?.AskAIWithDefaultPrompt(_mainWindowViewModel.ImageSource);
     }
 
-    private void TakeScreenshot()
+    public void TakeScreenshotWithCallback(Action<Bitmap?> callback)
     {
         IScreenCapturer? screenCapturer = ServiceProviderBuilder.ServiceProvider?.GetService<IScreenCapturer>();
-        screenCapturer?.CaptureScreen(1920, 1080, (bitmap) =>
+        screenCapturer?.CaptureScreen(1920, 1080, callback);
+    }
+
+    public void TakeScreenshot()
+    {
+        TakeScreenshotWithCallback(bitmap =>
         {
             if (_mainWindowViewModel != null)
                 _mainWindowViewModel.ImageSource = bitmap;

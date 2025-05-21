@@ -63,6 +63,7 @@
                                             Gesture="Enter"/>
                             </TextBox.KeyBindings>
                         </TextBox>
+                        <CheckBox Foreground="White" IsChecked="{Binding ChatWithScreenshot}">With screenshot</CheckBox>
                     </StackPanel>
                 </Border>
             </Grid>

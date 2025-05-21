@@ -55,7 +55,17 @@ public partial class MainWindowViewModel: ViewModelBase
     private double _chatBoxWidth = 800;
     [ObservableProperty]
     private double _chatBoxHeight = 600;
-    
+    [ObservableProperty]
+    private bool _chatWithScreenshot;
+
+    partial void OnChatWithScreenshotChanged(bool value)
+    {
+        if (!value)
+        {
+            ImageSource = null;
+        }
+    }
+
     public void AskAIWithDefaultPrompt(Bitmap? bitmap)
     {
         if (bitmap == null)
@@ -77,7 +87,23 @@ public partial class MainWindowViewModel: ViewModelBase
     {
         MdText += Environment.NewLine;
         MdText += UserMessage;
-        _ = AIChat.Ask(ImageSource, UserMessage);
+
+        if (ChatWithScreenshot)
+        {
+            if (Application.Current is App app)
+            {
+                app.TakeScreenshotWithCallback(bitmap =>
+                {
+                    ImageSource = bitmap;
+                    _ = AIChat.Ask(ImageSource, UserMessage);
+                });
+            }
+        }
+        else
+        {
+            _ = AIChat.Ask(ImageSource, UserMessage);
+        }
+        
         UserMessage = string.Empty;
     }
     
