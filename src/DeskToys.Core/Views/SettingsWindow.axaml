@@ -63,8 +63,8 @@
                     Padding="10"
                     >
                         <Grid ColumnDefinitions="Auto, *"  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Margin="10 5">Toggle Open main window:</TextBlock> 
-                            <TextBox Grid.Row="0" Grid.Column="1" Margin="10 5" Name="OpenMainWindow" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus" IsReadOnly="True"  Width="260" Watermark= "Press shortcut"  Text="{Binding MainWindowKey, Mode=TwoWay} " >
+                            <TextBlock Grid.Row="0" Grid.Column="0" Margin="10 5">Toggle Open chat window:</TextBlock> 
+                            <TextBox Grid.Row="0" Grid.Column="1" Margin="10 5" Name="OpenChatWindow" KeyDown="OnKeyDown" GotFocus="OnTextBoxFocused" LostFocus="OnTextBoxLostFocus" IsReadOnly="True"  Width="260" Watermark= "Press shortcut"  Text="{Binding ChatWindowKey, Mode=TwoWay} " >
                                 <TextBox.Styles>
                                     <Style Selector="TextBox">
                                         <Setter Property="CaretBrush" Value="Transparent"/>

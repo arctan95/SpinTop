@@ -18,7 +18,7 @@ public class WindowConfigurator: IWindowConfigurator
         });
     }
 
-    public void ExtendToFullScreen(IntPtr handle, bool extendToFullScreen)
+    public void SetOverlayWindow(IntPtr handle, bool extendToFullScreen)
     {
         if (extendToFullScreen)
         {

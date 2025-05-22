@@ -10,7 +10,7 @@ namespace DeskToys.Core.Services;
 
 public class InputListener
 {
-    private static MainWindowViewModel? _mainWindowViewModel;
+    private static ChatWindowViewModel? _chatWindowViewModel;
     private static IGlobalHook? _globalHook;
     private static DateTime _lastAltTime = DateTime.MinValue;
     private static DateTime _lastShiftTime = DateTime.MinValue;
@@ -25,7 +25,7 @@ public class InputListener
         _globalHook.KeyPressed += CheckDefaultKeyBindings;
         _globalHook.MouseMoved += OnMouseMoved;
         _globalHook.MouseDragged += OnMouseMoved;
-        _mainWindowViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<MainWindowViewModel>();
+        _chatWindowViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<ChatWindowViewModel>();
     }
     public static void SetupSystemHook()
     {
@@ -43,7 +43,7 @@ public class InputListener
 
     private static void OnMouseMoved(object? sender, MouseHookEventArgs e)
     {
-        _mainWindowViewModel?.OnMouseMoved(e.Data.X, e.Data.Y);
+        _chatWindowViewModel?.OnMouseMoved(e.Data.X, e.Data.Y);
     }
 
     private static void CheckDefaultKeyBindings(object? sender, KeyboardHookEventArgs e)
@@ -55,7 +55,7 @@ public class InputListener
             
             if (timeDelta.TotalMilliseconds < DoubleTapThresholdMs)
             {
-                _mainWindowViewModel?.ToggleFollowPointer();
+                _chatWindowViewModel?.ToggleFollowPointer();
             }
             _lastAltTime = now;
         }
@@ -99,20 +99,7 @@ public class InputListener
             {
                 if (Application.Current is App app)
                 {
-                    if (_mainWindowViewModel != null)
-                    {
-                        if (_mainWindowViewModel is { MainWindowShown: true, Interactive: true })
-                        {
-                            return;
-                        }
-                        if (!_mainWindowViewModel.MainWindowShown)
-                        {
-                            app.ShowMainWindow(true);
-                        }
-                        app.ForceActivateMainWindow();
-                        
-                        _mainWindowViewModel.Interactive = true;
-                    }
+                    app.OpenChatWindowForInput();
                 }
             }
             _lastShiftTime = now;
@@ -122,7 +109,7 @@ public class InputListener
     
     static void ScrollMarkdown(Vector offset)
     {
-        _mainWindowViewModel?.ScrollMarkdown(offset);
+        _chatWindowViewModel?.ScrollMarkdown(offset);
     }
 
     

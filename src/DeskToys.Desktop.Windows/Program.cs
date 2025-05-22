@@ -21,6 +21,7 @@ class Program
             .AddSingleton<ISystemHotKeyRegister, SystemHotkeyRegister>()
             .AddSingleton<ConfigService>()
             .AddSingleton<MainWindowViewModel>()
+            .AddSingleton<ChatWindowViewModel>()
             .AddSingleton<SettingsWindowViewModel>()
             .Build();
         

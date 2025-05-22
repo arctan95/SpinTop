@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls;
 using Avalonia.Controls.Converters;
 using Avalonia.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -25,7 +26,7 @@ public partial class SettingsWindowViewModel: ViewModelBase
     [ObservableProperty]
     private string? _model;
     [ObservableProperty]
-    private string? _mainWindowKey;
+    private string? _chatWindowKey;
     [ObservableProperty]
     private string? _screenshotKey;
     [ObservableProperty]
@@ -46,6 +47,18 @@ public partial class SettingsWindowViewModel: ViewModelBase
     private bool _startOnBoot;
     [ObservableProperty]
     private string? _language;
+    
+    // global app settings
+    [ObservableProperty]
+    private int _screenMaxWidth;
+    [ObservableProperty]
+    private int _screenMaxHeight;
+    [ObservableProperty]
+    private bool _contentProtection = true;
+    [ObservableProperty]
+    private bool _extendToFullScreen = true;
+    [ObservableProperty]
+    private bool _ignoreMouseEvents = true;
     
     partial void OnAutoCheckForUpdatesChanged(bool value) => _configService?.Set("general.auto_check_for_updates", value);
 
@@ -72,15 +85,15 @@ public partial class SettingsWindowViewModel: ViewModelBase
         Endpoint = _configService?.Get<string>("ai.endpoint") ?? string.Empty;
         Model = _configService?.Get<string>("ai.model") ?? string.Empty;
 
-        var mainWindowHotkey = _configService?.Get<ushort[]>("control.open_main_window");
+        var chatWindowHotkey = _configService?.Get<ushort[]>("control.open_chat_window");
         var screenshotHotKey = _configService?.Get<ushort[]>("control.take_screenshot");
         var askAIHotKey = _configService?.Get<ushort[]>("control.ask_ai");
         var startOverHotkey = _configService?.Get<ushort[]>("control.start_over");
         var quitAppHotkey = _configService?.Get<ushort[]>("control.quit_app");
         var clickThroughHotkey = _configService?.Get<ushort[]>("control.click_through");
-        if (mainWindowHotkey is { Length: > 1 })
+        if (chatWindowHotkey is { Length: > 1 })
         {
-            MainWindowKey = PlatformKeyGestureConverter.ToPlatformString(new KeyGesture(KeyConvertor.ToKey((KeyCode)mainWindowHotkey[1]), KeyConvertor.ToKeyModifiers((ModifierMask)mainWindowHotkey[0])));
+            ChatWindowKey = PlatformKeyGestureConverter.ToPlatformString(new KeyGesture(KeyConvertor.ToKey((KeyCode)chatWindowHotkey[1]), KeyConvertor.ToKeyModifiers((ModifierMask)chatWindowHotkey[0])));
         }
         if (screenshotHotKey is { Length: > 1 })
         {
@@ -109,5 +122,10 @@ public partial class SettingsWindowViewModel: ViewModelBase
         hotkey.SetFunctionBinding(FunctionRegistry.GetFunction(functionName));
         GlobalHotkeyManager.BindHotkey(functionName, hotkey);
         _configService?.Set("control." + functionName, new[] {(ushort)hotkey.Modifier, (ushort)hotkey.Key });
-}
+    }
+    public void ConfigureWindowBehaviors(Window window, WindowBehaviorOptions options)
+    { 
+        var windowConfigurator = ServiceProviderBuilder.ServiceProvider?.GetService<IWindowConfigurator>();
+        windowConfigurator?.ConfigureWindow(window, options);
+    }
 }

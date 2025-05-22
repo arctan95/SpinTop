@@ -21,13 +21,13 @@ class Program
             .AddSingleton<ISystemHotKeyRegister, SystemHotkeyRegister>()
             .AddSingleton<ConfigService>()
             .AddSingleton<MainWindowViewModel>()
+            .AddSingleton<ChatWindowViewModel>()
             .AddSingleton<SettingsWindowViewModel>()
             .Build();
         
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
     }
-    // .StartWithHeadlessVncPlatform(null, 5903, args, ShutdownMode.OnMainWindowClose);
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()

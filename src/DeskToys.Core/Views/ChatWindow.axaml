@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:DeskToys.Core.ViewModels"
+        x:Class="DeskToys.Core.Views.ChatWindow"
+        x:DataType="viewModels:ChatWindowViewModel"
+        SizeToContent="WidthAndHeight"
+        >
+    <Grid>
+        <Image Source="{Binding ImageSource}"
+               Stretch="Uniform"
+               MaxWidth="240"
+               MaxHeight="135"
+               HorizontalAlignment="Right"
+               VerticalAlignment="Top"
+               ZIndex="-10" />
+        <Rectangle Fill="Black" Stretch="Fill" Opacity="{Binding ChatBoxOpacity}" RadiusX="5" RadiusY="5"/>                
+        <Border BorderBrush="{Binding ChatBoxBorderColor}"
+                BorderThickness="1"
+                CornerRadius="5"
+                Padding="5">
+            <StackPanel>
+                <ScrollViewer Name="ChatView"
+                              Width="{Binding ChatBoxWidth}" Height="{Binding ChatBoxHeight}"
+                              VerticalContentAlignment="Stretch"
+                              HorizontalAlignment="Stretch"
+                              Offset="{Binding MarkdownScrollValue, Mode=TwoWay}">
+                    <SelectableTextBlock Text="{Binding MdText}"
+                                         Foreground="White"
+                                         TextWrapping="Wrap"/>
+                </ScrollViewer>
+          
+                    
+                <TextBox Name="UserPrompt" Margin="0 10 0 0" Height="30" Width="800" Watermark="Ask me anything..."
+                         TextWrapping="Wrap"
+                         Text="{Binding UserMessage}"
+                         AcceptsReturn="True"
+                         HorizontalAlignment="Stretch"
+                         VerticalContentAlignment="Bottom" >
+                    <TextBox.InnerRightContent>
+                        <StackPanel>
+                            <Button Command="{Binding StopAIResponse}"
+                                    IsVisible="{Binding MessageRequested}"
+                                    Margin="4"
+                                    Background="Transparent">
+                                <PathIcon Data="M6,6 H18 V18 H6 Z"
+                                          Width="12"
+                                          Height="12" />
+                            </Button>
+                            <Button Command="{Binding SendMessage}"
+                                    IsVisible="{Binding !MessageRequested}"
+                                    Margin="4"
+                                    Background="Transparent">
+                                <PathIcon Data="M2,3 L22,12 L2,21 L2,13 L17,12 L2,11 Z"
+                                          Width="12"
+                                          Height="12" />
+                            </Button>
+                        </StackPanel>
+                    </TextBox.InnerRightContent>
+                    <TextBox.KeyBindings>
+                        <KeyBinding Command="{Binding SendMessage}"
+                                    Gesture="Enter"/>
+                    </TextBox.KeyBindings>
+                </TextBox>
+                <CheckBox Foreground="White" IsChecked="{Binding ChatWithScreenshot}">With screenshot</CheckBox>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

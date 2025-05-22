@@ -3,3 +3,4 @@ SetWindowLong
 SetWindowDisplayAffinity
 SetLayeredWindowAttributes
 SetWindowPos
+GetWindowRect

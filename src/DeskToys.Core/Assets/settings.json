@@ -12,7 +12,7 @@
 		"default_system_prompt": ""
 	},
 	"control": {
-		"open_main_window": [1, 119],
+		"open_chat_window": [1, 119],
 		"take_screenshot": [1, 120],
 		"ask_ai": [3, 10],
 		"start_over": [1, 121],

@@ -10,13 +10,13 @@ public interface IWindowConfigurator
     {
         if (window.TryGetPlatformHandle()?.Handle is { } handle)
         {
-            ExtendToFullScreen(handle, windowBehaviorOptions.ExtendToFullScreen);
+            SetOverlayWindow(handle, windowBehaviorOptions.ExtendToFullScreen);
             SetIgnoresMouseEvents(handle, windowBehaviorOptions.IgnoreMouseEvents);
             SetContentProtection(handle, windowBehaviorOptions.ContentProtection);
         }
     }
     
     public void SetIgnoresMouseEvents(IntPtr window, bool ignoreMouseEvents);
-    public void ExtendToFullScreen(IntPtr window, bool extendToFullScreen);
+    public void SetOverlayWindow(IntPtr window, bool extendToFullScreen);
     public void SetContentProtection(IntPtr window, bool contentProtection);
 }

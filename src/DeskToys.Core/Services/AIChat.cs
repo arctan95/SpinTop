@@ -14,14 +14,14 @@ namespace DeskToys.Core.Services;
 
 public class AIChat
 {
-    private static MainWindowViewModel? _mainWindowViewModel;
+    private static ChatWindowViewModel? _chatWindowViewModel;
     private static SettingsWindowViewModel? _settingsViewModel;
     private static ChatClient? chatClient;
     private static readonly Dictionary<string, CancellationTokenSource> Cancellations = new();
 
     static AIChat()
     {
-        _mainWindowViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<MainWindowViewModel>();
+        _chatWindowViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<ChatWindowViewModel>();
         _settingsViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<SettingsWindowViewModel>();
         if (_settingsViewModel is { Endpoint: not null, ApiKey: not null })
         {
@@ -39,10 +39,10 @@ public class AIChat
         if (!string.IsNullOrEmpty(requestId) && Cancellations.ContainsKey(requestId))
         {
             var  cancellationTokenSource = Cancellations[requestId];
-            if (cancellationTokenSource != null && !cancellationTokenSource.IsCancellationRequested && _mainWindowViewModel != null)
+            if (cancellationTokenSource != null && !cancellationTokenSource.IsCancellationRequested && _chatWindowViewModel != null)
             {
                 cancellationTokenSource.Cancel();
-                _mainWindowViewModel.MessageRequested = false;
+                _chatWindowViewModel.MessageRequested = false;
                 Cancellations.Remove(requestId);
             }
         }
@@ -56,11 +56,11 @@ public class AIChat
         Cancellations.Add(requestId, cts);
         AsyncCollectionResult<StreamingChatCompletionUpdate>? completionUpdates = chatClient?.CompleteChatStreamingAsync(messages, null, cancelToken);
 
-        if (_mainWindowViewModel != null)
+        if (_chatWindowViewModel != null)
         {
-            _mainWindowViewModel.LastRequestId = requestId;
-            _mainWindowViewModel.MessageRequested = true;
-            _mainWindowViewModel.MdText = "[AI]: ";
+            _chatWindowViewModel.LastRequestId = requestId;
+            _chatWindowViewModel.MessageRequested = true;
+            _chatWindowViewModel.MdText = "[AI]: ";
             if (completionUpdates != null)
             {
                 await foreach (StreamingChatCompletionUpdate completionUpdate in completionUpdates)
@@ -68,12 +68,12 @@ public class AIChat
                     if (completionUpdate.ContentUpdate.Count > 0)
                     {
                         string text = completionUpdate.ContentUpdate[0].Text;
-                        _mainWindowViewModel.UpdateText(text);
+                        _chatWindowViewModel.UpdateText(text);
                     }
 
                     if (completionUpdate.FinishReason == ChatFinishReason.Stop)
                     {
-                        _mainWindowViewModel.MessageRequested = false;
+                        _chatWindowViewModel.MessageRequested = false;
                         Cancellations.Remove(requestId);
                     }
                 }

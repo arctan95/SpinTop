@@ -29,10 +29,12 @@ public partial class App : Application
 {
     
     private IClassicDesktopStyleApplicationLifetime? _lifetime;
-    private MainWindowViewModel? _mainWindowViewModel;
+    private ChatWindowViewModel? _chatWindowViewModel;
     private SettingsWindowViewModel? _settingsWindowViewModel;
+    private MainWindowViewModel? _mainWindowViewModel;
     private ConfigService? _configService;
-    private Window? _mainWindow;
+    private Window? _chatWindow;
+    private Window? _shortcutHintWindow;
     private SparkleUpdater? _sparkle;
     
     public ICommand SettingsCommand { get; }
@@ -45,8 +47,9 @@ public partial class App : Application
     {
         QuitCommand = new RelayCommand(QuitApplication);
         SettingsCommand = new RelayCommand(ShowSettingsWindow);
-        MainCommand = new RelayCommand(ShowMainWindow);
+        MainCommand = new RelayCommand(OpenMainWindow);
         CheckUpdatesCommand = new AsyncRelayCommand(CheckUpdates);
+        _chatWindowViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<ChatWindowViewModel>();
         _mainWindowViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<MainWindowViewModel>();
         _settingsWindowViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<SettingsWindowViewModel>();
         _configService = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<ConfigService>();
@@ -65,7 +68,7 @@ public partial class App : Application
     private void RegisterGlobalHotkeys()
     {
         // predefined global hotkeys
-        GlobalHotkeyManager.BindHotkey("hide_main_window", ModifierMask.None, KeyCode.VcEscape,  HideMainWindow);
+        GlobalHotkeyManager.BindHotkey("hide_chat_window", ModifierMask.None, KeyCode.VcEscape,  HideChatWindow);
         
         foreach (var keyValuePair in FunctionRegistry._functionBindings)
         {
@@ -85,7 +88,7 @@ public partial class App : Application
     
     private void RegisterFunctions()
     {
-        FunctionRegistry.RegisterFunction("open_main_window", ToggleShowMainWindow);
+        FunctionRegistry.RegisterFunction("open_chat_window", ToggleShowChatWindow);
         FunctionRegistry.RegisterFunction("take_screenshot", TakeScreenshot);
         FunctionRegistry.RegisterFunction("start_over", StartOver);
         FunctionRegistry.RegisterFunction("ask_ai", AskAI);
@@ -95,23 +98,30 @@ public partial class App : Application
     
     public void ToggleClickThrough()
     {
-        if (_mainWindow != null && _mainWindowViewModel != null)
+        if (_chatWindow != null && _settingsWindowViewModel != null)
         {
-            _mainWindowViewModel.IgnoreMouseEvents = !_mainWindowViewModel.IgnoreMouseEvents;;
-
-            _mainWindowViewModel.ConfigureWindowBehaviors(_mainWindow, new WindowBehaviorOptions
+            _settingsWindowViewModel.IgnoreMouseEvents = !_settingsWindowViewModel.IgnoreMouseEvents;;
+            _settingsWindowViewModel.ConfigureWindowBehaviors(_chatWindow, new WindowBehaviorOptions
             {
-                ContentProtection = _mainWindowViewModel.ContentProtection,
-                ExtendToFullScreen = _mainWindowViewModel.ExtendToFullScreen,
-                IgnoreMouseEvents = _mainWindowViewModel.IgnoreMouseEvents,
+                ContentProtection = _settingsWindowViewModel.ContentProtection,
+                ExtendToFullScreen = _settingsWindowViewModel.ExtendToFullScreen,
+                IgnoreMouseEvents = _settingsWindowViewModel.IgnoreMouseEvents,
             });
+        }
+    }
+
+    public void UpdateChatWindowPosition(PixelPoint newPosition)
+    {
+        if (_chatWindow != null && _chatWindowViewModel != null)
+        {
+            Dispatcher.UIThread.InvokeAsync(() => { _chatWindow.Position = newPosition; });
         }
     }
 
 
     private void AskAI()
     {
-        _mainWindowViewModel?.AskAIWithDefaultPrompt(_mainWindowViewModel.ImageSource);
+        _chatWindowViewModel?.AskAIWithDefaultPrompt(_chatWindowViewModel.ImageSource);
     }
 
     public void TakeScreenshotWithCallback(Action<Bitmap?> callback)
@@ -124,8 +134,8 @@ public partial class App : Application
     {
         TakeScreenshotWithCallback(bitmap =>
         {
-            if (_mainWindowViewModel != null)
-                _mainWindowViewModel.ImageSource = bitmap;
+            if (_chatWindowViewModel != null)
+                _chatWindowViewModel.ImageSource = bitmap;
         });
     }
 
@@ -175,53 +185,104 @@ public partial class App : Application
             await _sparkle.StartLoop(_settingsWindowViewModel?.AutoCheckForUpdates ?? true);
         }
     }
-    public void ShowMainWindow()
+    public void OpenMainWindow()
     {
-        ShowMainWindow(false);
-    }
-    public void ShowMainWindow(bool forceActivated)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
+        if (_mainWindowViewModel is { MainWindowShown: false })
         {
-            if (_mainWindow == null)
+            var window = new MainWindow
             {
-                _mainWindow = new MainWindow
-                {
-                    Topmost = true,
-                    CanResize = false,
-                    ShowInTaskbar = false,
-                    ShowActivated = forceActivated,
-                    Background = Brushes.Transparent,
-                    TransparencyLevelHint = [WindowTransparencyLevel.Transparent],
-                    SystemDecorations = SystemDecorations.None,
-                    DataContext = _mainWindowViewModel
-                };
-            }
-            if (_mainWindowViewModel != null)
-                _mainWindowViewModel.MainWindowShown = true;
-            
-            _mainWindow.Show();
-        });
+                DataContext = _mainWindowViewModel
+            };
+            window.Show();
+            _mainWindowViewModel.MainWindowShown = true;
+        }
     }
-    
-    protected void HideMainWindow()
+
+    public void OpenChatWindowForInput()
+    {
+        if (_chatWindowViewModel != null)
+        {
+            if (_chatWindowViewModel is { ChatWindowShown: true, Interactive: true })
+            {
+                return;
+            }
+            if (!_chatWindowViewModel.ChatWindowShown)
+            {
+                ShowChatWindow(true);
+            }
+            ForceActivateChatWindow();
+                        
+            _chatWindowViewModel.Interactive = true;
+        }
+    }
+    public void ShowChatWindow()
+    {
+        ShowChatWindow(false);
+    }
+    public void ShowChatWindow(bool forceActivated)
     {
         Dispatcher.UIThread.InvokeAsync(() =>
         {
-            _mainWindow?.Close();
-            _mainWindow = null;
+            if (_chatWindowViewModel != null)
+            {
+                if (_chatWindow == null)
+                {
+                    _chatWindow = new ChatWindow
+                    {
+                        Topmost = true,
+                        CanResize = false,
+                        ShowInTaskbar = false,
+                        ShowActivated = forceActivated,
+                        Background = Brushes.Transparent,
+                        TransparencyLevelHint = [WindowTransparencyLevel.Transparent],
+                        SystemDecorations = SystemDecorations.None,
+                        DataContext = _chatWindowViewModel
+                    };
+                }
+                
+                if (_shortcutHintWindow == null)
+                {
+                    _shortcutHintWindow = new ShortcutHintWindow
+                    {
+                        Topmost = true,
+                        CanResize = false,
+                        ShowInTaskbar = false,
+                        ShowActivated = false,
+                        Background = Brushes.Transparent,
+                        TransparencyLevelHint = [WindowTransparencyLevel.Transparent],
+                        SystemDecorations = SystemDecorations.None,
+                        DataContext = _chatWindowViewModel
+                    };
+                }
+                
+                _chatWindowViewModel.ChatWindowShown = true;
+            }
+            
+            _chatWindow?.Show();
+            _shortcutHintWindow?.Show();
         });
     }
     
-    public void ToggleShowMainWindow()
+    protected void HideChatWindow()
     {
-        if (_mainWindowViewModel is { MainWindowShown: true })
+        Dispatcher.UIThread.InvokeAsync(() =>
         {
-            HideMainWindow();
+            _chatWindow?.Close();
+            _shortcutHintWindow?.Close();
+            _chatWindow = null;
+            _shortcutHintWindow = null;
+        });
+    }
+    
+    public void ToggleShowChatWindow()
+    {
+        if (_chatWindowViewModel is { ChatWindowShown: true })
+        {
+            HideChatWindow();
         }
         else
         {
-            ShowMainWindow();
+            ShowChatWindow();
         }
     }
 
@@ -246,22 +307,22 @@ public partial class App : Application
     {
         Dispatcher.UIThread.InvokeAsync(() =>
         {
-            if (_mainWindowViewModel != null)
+            if (_chatWindowViewModel != null)
             {
-                _mainWindowViewModel.MdText = "DeskToys AI";
-                _mainWindowViewModel.ImageSource = null;
-                _mainWindowViewModel.UserMessage = string.Empty;
-                _mainWindowViewModel.StopAIResponse();
+                _chatWindowViewModel.MdText = "DeskToys AI";
+                _chatWindowViewModel.ImageSource = null;
+                _chatWindowViewModel.UserMessage = string.Empty;
+                _chatWindowViewModel.StopAIResponse();
             }
         });
     }
-    public void ForceActivateMainWindow()
+    public void ForceActivateChatWindow()
     {
-        if (_mainWindow != null)
+        if (_chatWindow != null)
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                _mainWindow.Activate();
+                _chatWindow.Activate();
             });
         }
     }
