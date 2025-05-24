@@ -1,7 +1,0 @@
-<Project>
-    <ItemGroup>
-        <!-- Prevent trimming of critical Avalonia theme assemblies -->
-        <TrimmerRootAssembly Include="Avalonia.Themes.Fluent" />
-        <TrimmerRootDescriptor Include="TrimmerRoots.xml" />
-    </ItemGroup>
-</Project>

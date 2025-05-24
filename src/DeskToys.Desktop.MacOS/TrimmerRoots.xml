@@ -1,7 +1,0 @@
-<linker>
-    <assembly fullname="DeskToys.Core">
-        <type fullname="DeskToys.Core.ViewModels*" preserve="all"/>
-        <type fullname="DeskToys.Core.Services*" preserve="all"/>
-        <type fullname="DeskToys.Core.MacOS.Services*" preserve="all"/>
-    </assembly>
-</linker>
