@@ -143,4 +143,9 @@ public partial class ChatWindowViewModel: ViewModelBase
         ChatBoxBorderColor = value ? "Blue" : "Transparent";
         ChatBoxOpacity = value ? "0.5" : "0.4";
     }
+
+    public void ShowMissingApiKeyHint()
+    {
+        MdText = "Please configure your AI provider's API key in the settings.";
+    }
 }
