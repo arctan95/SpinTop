@@ -18,19 +18,39 @@ public class AIChat
     private static SettingsWindowViewModel? _settingsViewModel;
     private static ChatClient? chatClient;
     private static readonly Dictionary<string, CancellationTokenSource> Cancellations = new();
-
-    static AIChat()
+    private static bool _initialized;
+    
+    private static bool TryInitialize()
     {
-        _chatWindowViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<ChatWindowViewModel>();
-        _settingsViewModel = ServiceProviderBuilder.ServiceProvider?.GetRequiredService<SettingsWindowViewModel>();
-        if (_settingsViewModel is { Endpoint: not null, ApiKey: not null })
+        try
         {
-            OpenAIClientOptions options =  new OpenAIClientOptions
+            _chatWindowViewModel ??= ServiceProviderBuilder.ServiceProvider?.GetRequiredService<ChatWindowViewModel>();
+            _settingsViewModel ??= ServiceProviderBuilder.ServiceProvider?.GetRequiredService<SettingsWindowViewModel>();
+
+            if (string.IsNullOrWhiteSpace(_settingsViewModel?.Endpoint) ||
+                string.IsNullOrWhiteSpace(_settingsViewModel?.ApiKey))
             {
-                Endpoint = new Uri(_settingsViewModel.Endpoint)
-            };
-            var openAiClient = new OpenAIClient(new ApiKeyCredential(_settingsViewModel.ApiKey), options);
-            chatClient = openAiClient.GetChatClient(_settingsViewModel.Model);
+                return false;
+            }
+
+            if (chatClient == null)
+            {
+                var options = new OpenAIClientOptions
+                {
+                    Endpoint = new Uri(_settingsViewModel.Endpoint)
+                };
+
+                var openAiClient = new OpenAIClient(new ApiKeyCredential(_settingsViewModel.ApiKey), options);
+                chatClient = openAiClient.GetChatClient(_settingsViewModel.Model);
+            }
+
+            _initialized = true;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to initialize AI chat service：{ex.Message}");
+            return false;
         }
     }
 
@@ -84,6 +104,12 @@ public class AIChat
     
     public static async Task Ask(Bitmap? bitmap = null, string? question = null)
     {
+        if (!_initialized && !TryInitialize())
+        {
+            _chatWindowViewModel?.ShowMissingApiKeyHint();
+            return;
+        }
+        
         var userPrompt = question ?? _settingsViewModel?.UserPrompt;
         var systemPrompt = _settingsViewModel?.SystemPrompt;
 
