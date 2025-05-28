@@ -32,9 +32,9 @@ public partial class ChatWindowViewModel: ViewModelBase
     [ObservableProperty]
     private bool _followPointer;
     [ObservableProperty]
-    private double _chatBoxWidth = 800;
+    private double _chatBoxWidth;
     [ObservableProperty]
-    private double _chatBoxHeight = 600;
+    private double _chatBoxHeight;
     [ObservableProperty]
     private bool _chatWithScreenshot;
     [ObservableProperty]

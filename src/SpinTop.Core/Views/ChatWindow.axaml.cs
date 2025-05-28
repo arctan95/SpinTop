@@ -13,6 +13,17 @@ public partial class ChatWindow : Window
         InitializeComponent();
         Activated += OnActivated;
         Deactivated += OnDeActivated;
+        Closing += OnClosing;
+        Resized += OnResized;
+    }
+
+    private void OnResized(object? sender, WindowResizedEventArgs e)
+    {
+        if (DataContext is ChatWindowViewModel vm)
+        {
+            vm.ChatBoxWidth = e.ClientSize.Width;
+            vm.ChatBoxHeight = e.ClientSize.Height;
+        }
     }
 
     private void OnActivated(object? sender, EventArgs e)
