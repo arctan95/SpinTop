@@ -32,9 +32,9 @@ public partial class ChatWindowViewModel: ViewModelBase
     [ObservableProperty]
     private bool _followPointer;
     [ObservableProperty]
-    private double _chatBoxWidth = 800;
+    private double _chatBoxWidth;
     [ObservableProperty]
-    private double _chatBoxHeight = 600;
+    private double _chatBoxHeight;
     [ObservableProperty]
     private bool _chatWithScreenshot;
     [ObservableProperty]
@@ -133,7 +133,9 @@ public partial class ChatWindowViewModel: ViewModelBase
 
     public void ScrollMarkdown(Vector vector)
     {
-        MarkdownScrollValue += vector;
+        var newX = Math.Clamp(MarkdownScrollValue.X + vector.X, 0, ChatBoxWidth);
+        var newY = Math.Clamp(MarkdownScrollValue.Y + vector.Y, 0, ChatBoxHeight);
+        MarkdownScrollValue = new Vector(newX, newY);
     }
 
     partial void OnIgnoreMouseEventsChanged(bool value)
