@@ -30,8 +30,6 @@ public partial class ChatWindowViewModel: ViewModelBase
     [ObservableProperty]
     private string _chatBoxOpacity = "0.4";
     [ObservableProperty]
-    private bool _interactive;
-    [ObservableProperty]
     private bool _followPointer;
     [ObservableProperty]
     private double _chatBoxWidth = 800;
@@ -138,10 +136,9 @@ public partial class ChatWindowViewModel: ViewModelBase
         MarkdownScrollValue += vector;
     }
 
-    partial void OnInteractiveChanged(bool value)
+    partial void OnIgnoreMouseEventsChanged(bool value)
     {
-        ChatBoxBorderColor = value ? "Blue" : "Transparent";
-        ChatBoxOpacity = value ? "0.5" : "0.4";
+        ChatBoxBorderColor = value ? "Transparent" : "Green";
     }
 
     public void ShowMissingApiKeyHint()

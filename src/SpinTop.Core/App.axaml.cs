@@ -191,20 +191,15 @@ public partial class App : Application
 
     public void OpenChatWindowForInput()
     {
-        if (_chatWindowViewModel != null)
+        if (_chatWindow is { IsActive: true })
         {
-            if (_chatWindowViewModel is { Interactive: true })
-            {
-                return;
-            }
-            if (_chatWindow == null)
-            {
-                ShowChatWindow(true);
-            }
-            ForceActivateChatWindow();
-                        
-            _chatWindowViewModel.Interactive = true;
+            return;
         }
+        if (_chatWindow == null)
+        {
+            ShowChatWindow(true);
+        }
+        ForceActivateChatWindow();
     }
     
     public void ShowChatWindow()

@@ -15,7 +15,7 @@
                Margin="4"/>
         <Rectangle Fill="Black" Stretch="Fill" Opacity="{Binding ChatBoxOpacity}" RadiusX="5" RadiusY="5"/>                
         <Border BorderBrush="{Binding ChatBoxBorderColor}"
-                BorderThickness="1"
+                BorderThickness="2"
                 CornerRadius="5"
                 Padding="5">
             <StackPanel>

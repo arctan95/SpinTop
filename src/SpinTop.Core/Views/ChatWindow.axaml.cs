@@ -19,7 +19,8 @@ public partial class ChatWindow : Window
     {
         if (DataContext is ChatWindowViewModel vm)
         {
-            vm.Interactive = true;
+            vm.ChatBoxBorderColor = "Blue";
+            vm.ChatBoxOpacity = "0.5";
             ForceFocusUserPromptInput();
         }
     }
@@ -28,7 +29,8 @@ public partial class ChatWindow : Window
     {
         if (DataContext is ChatWindowViewModel vm)
         {
-            vm.Interactive = false;
+            vm.ChatBoxBorderColor = vm.IgnoreMouseEvents ? "Transparent" : "Green";
+            vm.ChatBoxOpacity = "0.4";
         }
     }
 
@@ -73,13 +75,4 @@ public partial class ChatWindow : Window
         }
     }
     
-
-    protected override void OnClosing(WindowClosingEventArgs e)
-    {
-        if (DataContext is ChatWindowViewModel viewModel)
-        {
-            viewModel.Interactive = false;
-        }
-        base.OnClosing(e);
-    }
 }
