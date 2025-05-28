@@ -28,7 +28,6 @@ public class WindowConfigurator: IWindowConfigurator
                 if (nsWindow != null)
                 {
                     nsWindow.Level = NSWindowLevel.PopUpMenu;
-                    nsWindow.StyleMask = NSWindowStyle.Borderless;
                 }
             });
         }

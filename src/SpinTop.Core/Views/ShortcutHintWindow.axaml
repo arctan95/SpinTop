@@ -7,7 +7,7 @@
         FontSize="14">
         
     <Grid>
-        <Rectangle Fill="Black" Stretch="Fill" Opacity="0.5" RadiusX="5" RadiusY="5"/>                
+        <Rectangle Fill="Black" Stretch="Fill" Opacity="0.6" RadiusX="5" RadiusY="5"/>                
         <Border Padding="5 " CornerRadius="5">
                 <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 

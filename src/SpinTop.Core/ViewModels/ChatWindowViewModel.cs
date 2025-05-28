@@ -12,8 +12,6 @@ public partial class ChatWindowViewModel: ViewModelBase
     [ObservableProperty]
     private Bitmap? _imageSource;
     [ObservableProperty]
-    private string _chatBoxBorderColor = "Transparent";
-    [ObservableProperty]
     private string _userMessage = "";
     [ObservableProperty]
     private string _lastRequestId = "";
@@ -137,11 +135,6 @@ public partial class ChatWindowViewModel: ViewModelBase
         var newX = MarkdownScrollValue.X + offset.X;
         var newY = MarkdownScrollValue.Y + offset.Y;
         MarkdownScrollValue = new Vector(newX, newY);
-    }
-
-    partial void OnIgnoreMouseEventsChanged(bool value)
-    {
-        ChatBoxBorderColor = value ? "Transparent" : "Green";
     }
 
     public void ShowMissingApiKeyHint()
