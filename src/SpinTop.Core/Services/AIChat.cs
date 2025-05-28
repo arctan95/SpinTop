@@ -110,7 +110,7 @@ public class AIChat
             return;
         }
         
-        var userPrompt = question ?? _settingsViewModel?.UserPrompt;
+        var userPrompt = string.IsNullOrWhiteSpace(question) ? _settingsViewModel?.UserPrompt : question;
         var systemPrompt = _settingsViewModel?.SystemPrompt;
 
         if (string.IsNullOrWhiteSpace(userPrompt) && bitmap == null)

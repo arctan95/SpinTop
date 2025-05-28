@@ -1,7 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
-using SpinTop.Core.Models;
+using Avalonia.Input;
 using SpinTop.Core.ViewModels;
 
 namespace SpinTop.Core.Views;
@@ -13,26 +13,29 @@ public partial class ChatWindow : Window
         InitializeComponent();
         Activated += OnActivated;
         Deactivated += OnDeActivated;
-        Closing += OnClosing;
         Resized += OnResized;
+        Closing += OnClosing;
+    }
+
+    private void OnActivated(object? sender, EventArgs e)
+    {
+        if (Application.Current is App app)
+        {
+            app.HideShortcutHintWindow();
+        }
+        if (DataContext is ChatWindowViewModel vm)
+        {
+            vm.ChatBoxOpacity = "0.5";
+            ForceFocusUserPromptInput();
+        }
     }
 
     private void OnResized(object? sender, WindowResizedEventArgs e)
     {
         if (DataContext is ChatWindowViewModel vm)
         {
-            vm.ChatBoxWidth = e.ClientSize.Width;
             vm.ChatBoxHeight = e.ClientSize.Height;
-        }
-    }
-
-    private void OnActivated(object? sender, EventArgs e)
-    {
-        if (DataContext is ChatWindowViewModel vm)
-        {
-            vm.ChatBoxBorderColor = "Blue";
-            vm.ChatBoxOpacity = "0.5";
-            ForceFocusUserPromptInput();
+            vm.ChatBoxWidth = e.ClientSize.Width;
         }
     }
     
@@ -40,7 +43,6 @@ public partial class ChatWindow : Window
     {
         if (DataContext is ChatWindowViewModel vm)
         {
-            vm.ChatBoxBorderColor = vm.IgnoreMouseEvents ? "Transparent" : "Green";
             vm.ChatBoxOpacity = "0.4";
         }
     }
@@ -48,24 +50,7 @@ public partial class ChatWindow : Window
     protected override void OnOpened(EventArgs e)
     {
         DetectScreenSize();
-        ConfigureWindow();
         base.OnOpened(e);
-    }
-
-    private void ConfigureWindow()
-    {
-        if (Application.Current is App app)
-        {
-            if (DataContext is ChatWindowViewModel vm)
-            {
-                app.ConfigureWindowBehaviors(this, new WindowBehaviorOptions
-                {
-                    ContentProtection = vm.ContentProtection,
-                    OverlayWindow = vm.OverlayWindow,
-                    IgnoreMouseEvents = vm.IgnoreMouseEvents
-                });
-            }
-        }
     }
 
     private void ForceFocusUserPromptInput()
@@ -85,5 +70,27 @@ public partial class ChatWindow : Window
             }
         }
     }
-    
+
+    private void OnClosing(object? sender, WindowClosingEventArgs e)
+    {
+        if (Application.Current is App app)
+        {
+            app.HideChatAndShortcutHintWindow();
+        }
+    }
+
+    private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            if (e.ClickCount == 2)
+            {
+                WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            }
+            else
+            {
+                BeginMoveDrag(e);
+            }
+        }
+    }
 }

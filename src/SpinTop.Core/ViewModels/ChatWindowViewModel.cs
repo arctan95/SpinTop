@@ -12,8 +12,6 @@ public partial class ChatWindowViewModel: ViewModelBase
     [ObservableProperty]
     private Bitmap? _imageSource;
     [ObservableProperty]
-    private string _chatBoxBorderColor = "Transparent";
-    [ObservableProperty]
     private string _userMessage = "";
     [ObservableProperty]
     private string _lastRequestId = "";
@@ -26,7 +24,7 @@ public partial class ChatWindowViewModel: ViewModelBase
     [ObservableProperty]
     private Vector _markdownScrollValue = Vector.Zero;
     [ObservableProperty]
-    private string _mdText = "Welcome to SpinTop AI";
+    private string _mdText = "What can I help with?";
     [ObservableProperty]
     private string _chatBoxOpacity = "0.4";
     [ObservableProperty]
@@ -136,11 +134,6 @@ public partial class ChatWindowViewModel: ViewModelBase
         var newX = Math.Clamp(MarkdownScrollValue.X + vector.X, 0, ChatBoxWidth);
         var newY = Math.Clamp(MarkdownScrollValue.Y + vector.Y, 0, ChatBoxHeight);
         MarkdownScrollValue = new Vector(newX, newY);
-    }
-
-    partial void OnIgnoreMouseEventsChanged(bool value)
-    {
-        ChatBoxBorderColor = value ? "Transparent" : "Green";
     }
 
     public void ShowMissingApiKeyHint()

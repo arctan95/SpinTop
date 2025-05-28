@@ -68,13 +68,11 @@ public partial class App : Application
     private void RegisterGlobalHotkeys()
     {
         // predefined global hotkeys
-        GlobalHotkeyManager.BindHotkey("hide_chat_window", ModifierMask.None, KeyCode.VcEscape,  HideChatWindow);
+        GlobalHotkeyManager.BindHotkey("hide_chat_window", ModifierMask.None, KeyCode.VcEscape,  HideChatAndShortcutHintWindow);
         
-        foreach (var keyValuePair in FunctionRegistry._functionBindings)
+        foreach (var (functionName, function) in FunctionRegistry._functionBindings)
         {
-            var functionName = keyValuePair.Key;
-            var function = keyValuePair.Value;
-            var hotkey = _configService?.Get<ushort[]>("control."+functionName);
+            var hotkey = _configService?.Get<ushort[]>("control." + functionName);
             if (hotkey is { Length: > 1 })
             {
                 GlobalHotkeyManager.BindHotkey(
@@ -99,12 +97,19 @@ public partial class App : Application
     {
         if (_chatWindow != null && _chatWindowViewModel != null)
         {
-            _chatWindowViewModel.IgnoreMouseEvents = !_chatWindowViewModel.IgnoreMouseEvents;;
-            ConfigureWindowBehaviors(_chatWindow, new WindowBehaviorOptions
+            Dispatcher.UIThread.InvokeAsync(() =>
             {
-                ContentProtection = _chatWindowViewModel.ContentProtection,
-                OverlayWindow = _chatWindowViewModel.OverlayWindow,
-                IgnoreMouseEvents = _chatWindowViewModel.IgnoreMouseEvents,
+                _chatWindowViewModel.IgnoreMouseEvents = !_chatWindowViewModel.IgnoreMouseEvents;
+                
+                ConfigureWindowBehaviors(_chatWindow, new WindowBehaviorOptions
+                {
+                    ContentProtection = _chatWindowViewModel.ContentProtection,
+                    OverlayWindow = _chatWindowViewModel.OverlayWindow,
+                    IgnoreMouseEvents = _chatWindowViewModel.IgnoreMouseEvents,
+                });
+                // fix text ghosting in click-through mode by remove decorations
+                _chatWindow.SystemDecorations = _chatWindowViewModel.IgnoreMouseEvents ? SystemDecorations.None : SystemDecorations.Full;
+                _chatWindow.TransparencyLevelHint = _chatWindowViewModel.IgnoreMouseEvents ? [WindowTransparencyLevel.Transparent] : [WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur];
             });
         }
     }
@@ -191,10 +196,6 @@ public partial class App : Application
 
     public void OpenChatWindowForInput()
     {
-        if (_chatWindow is { IsActive: true })
-        {
-            return;
-        }
         if (_chatWindow == null)
         {
             ShowChatWindow(true);
@@ -211,12 +212,16 @@ public partial class App : Application
     {
         Dispatcher.UIThread.InvokeAsync(() =>
         {
-            if (_chatWindowViewModel != null)
-            {
-                InitChatWindow(forceActivated);
-                InitShortcutHintWindow();
-            }
+            InitChatWindow(forceActivated);
             _chatWindow?.Show();
+        });
+    }
+
+    public void ShowShortcutHintWindow()
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            InitShortcutHintWindow();
             _shortcutHintWindow?.Show();
         });
     }
@@ -235,6 +240,10 @@ public partial class App : Application
                 TransparencyLevelHint = [WindowTransparencyLevel.Transparent],
                 SystemDecorations = SystemDecorations.None,
             };
+            ConfigureWindowBehaviors(_shortcutHintWindow, new WindowBehaviorOptions
+            {
+                ContentProtection = true, OverlayWindow = true, IgnoreMouseEvents = true
+            });
         }
     }
 
@@ -247,32 +256,61 @@ public partial class App : Application
                 _chatWindow = new ChatWindow
                 {
                     Topmost = true,
-                    CanResize = false,
+                    CanResize = true,
                     ShowInTaskbar = false,
+                    Width = 450,
+                    Height = 800,
                     ShowActivated = forceActivated,
                     Background = Brushes.Transparent,
-                    TransparencyLevelHint = [WindowTransparencyLevel.Transparent],
-                    SystemDecorations = SystemDecorations.None,
+                    ExtendClientAreaToDecorationsHint = true,
+                    SystemDecorations = forceActivated ? SystemDecorations.Full : SystemDecorations.None,
+                    TransparencyLevelHint = forceActivated ? [WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur] : [WindowTransparencyLevel.Transparent],
                     DataContext = _chatWindowViewModel
                 };
                 
                 if (_settingsWindowViewModel != null)
                 {
                     _chatWindowViewModel.IgnoreMouseEvents = _settingsWindowViewModel.ContentProtection;
-                    _chatWindowViewModel.OverlayWindow = _settingsWindowViewModel.OverlayWindow;
+                    _chatWindowViewModel.OverlayWindow = false;
                     _chatWindowViewModel.IgnoreMouseEvents = !forceActivated;
                 }
+                
+                ConfigureWindowBehaviors(_chatWindow, new WindowBehaviorOptions
+                {
+                    ContentProtection = _chatWindowViewModel.ContentProtection,
+                    OverlayWindow = _chatWindowViewModel.OverlayWindow,
+                    IgnoreMouseEvents = _chatWindowViewModel.IgnoreMouseEvents
+                });
             }
         }
     }
+
+    public void HideChatAndShortcutHintWindow()
+    {
+        HideChatWindow();
+        HideShortcutHintWindow();
+    }
+
+    public void ShowChatAndShortcutHintWindow()
+    {
+        ShowChatWindow();
+        ShowShortcutHintWindow();
+    }
     
-    protected void HideChatWindow()
+    public void HideChatWindow()
     {
         Dispatcher.UIThread.InvokeAsync(() =>
         {
             _chatWindow?.Close();
-            _shortcutHintWindow?.Close();
             _chatWindow = null;
+        });
+    }
+
+    public void HideShortcutHintWindow()
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            _shortcutHintWindow?.Close();
             _shortcutHintWindow = null;
         });
     }
@@ -281,11 +319,11 @@ public partial class App : Application
     {
         if (_chatWindow != null)
         {
-            HideChatWindow();
+            HideChatAndShortcutHintWindow();
         }
         else
         {
-            ShowChatWindow();
+            ShowChatAndShortcutHintWindow();
         }
     }
 
@@ -312,7 +350,7 @@ public partial class App : Application
         {
             if (_chatWindowViewModel != null)
             {
-                _chatWindowViewModel.MdText = "Welcome to SpinTop AI";
+                _chatWindowViewModel.MdText = "What can I help with?";
                 _chatWindowViewModel.ImageSource = null;
                 _chatWindowViewModel.UserMessage = string.Empty;
                 _chatWindowViewModel.StopAIResponse();
