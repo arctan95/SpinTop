@@ -1,6 +1,7 @@
 ﻿using SpinTop.Desktop.MacOS.Services;
 using Avalonia;
 using SpinTop.Core;
+using SpinTop.Core.Server;
 using SpinTop.Core.Services;
 using SpinTop.Core.ViewModels;
 
@@ -20,6 +21,7 @@ class Program
             .AddSingleton<IWindowConfigurator, WindowConfigurator>()
             .AddSingleton<ISystemHotKeyRegister, SystemHotkeyRegister>()
             .AddSingleton<ConfigService>()
+            .AddSingleton<McpServer>()
             .AddSingleton<ChatWindowViewModel>()
             .AddSingleton<SettingsWindowViewModel>()
             .Build();
